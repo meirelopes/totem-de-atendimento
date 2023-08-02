@@ -1,7 +1,11 @@
 package org.example;
 
+import model.ItemProduto;
 import model.Produto;
+import repository.ItemProdutoRepository;
 import repository.ProdutoRepository;
+import service.CarrinhoService;
+import service.ItemProdutoService;
 import view.Menu;
 
 import javax.persistence.EntityManager;
@@ -15,13 +19,7 @@ import java.util.logging.Logger;
 // then press Enter. You can now see whitespace characters in your code.
 public class Testes {
 
-
     public static void main(String[] args) {
-
-        Scanner scanner = new Scanner(System.in);
-
-        Menu menu = new Menu(scanner);
-
         // desabilita os logs do hibernate
         Logger hibernateLogger = Logger.getLogger("org.hibernate");
         hibernateLogger.setLevel(java.util.logging.Level.WARNING);
@@ -33,6 +31,22 @@ public class Testes {
         EntityManager entityManager = factory.createEntityManager();
 
         ProdutoRepository produtoRepository = new ProdutoRepository(entityManager);
+
+
+        Scanner scanner = new Scanner(System.in);
+
+        CarrinhoService carrinhoService = new CarrinhoService();
+
+        ItemProdutoRepository itemProdutoRepository = new ItemProdutoRepository(entityManager);
+
+
+        ItemProdutoService itemProdutoService = new ItemProdutoService(itemProdutoRepository, produtoRepository);
+
+        Menu menu = new Menu(scanner, carrinhoService, itemProdutoService);
+
+       ItemProduto itemProduto = menu.escolhaItemProduto(1);
+        System.out.println(itemProduto.getProduto().getNome());
+
 
         List<Produto> produtos = produtoRepository.listarProdutos();
 

@@ -1,34 +1,14 @@
 package view;
 
 
+import model.ItemProduto;
+import service.CarrinhoService;
+import service.ItemProdutoService;
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /*
-
-1. A tela inicial deve ter um menu onde a pessoa deve selecionar se ela quer comprar:
-1. Lanche
-2. Bebida
-2. Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente” e
-mostrar novamente o menu inicial.
-3. O sistema deve aceitar apenas o número da opção, ou seja, se a pessoa quiser um lanche ela deve inserir 1 e caso queira uma bebida ela deve digitar 2.
-4. Caso a pessoa tente inserir alguma informação do tipo String o sistema deve retornar uma mensagem: “Formato inválido, para escolher o item,
-você deve informar o número dele”.
-
-
-5. Quando digitar 1, ou seja, o item Lanche, deve aparecer as opções: 1. X-burger
-2. X-salada
-a. Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente” e
-mostrar novamente o menu inicial do lanche.
-b. Caso a pessoa tente inserir alguma informação do tipo String, o sistema deve retornar uma mensagem:
-“Formato inválido, para escolher o item, você deve informar o número dele”.
-7. Quando digitar 2, ou seja, o item Bebida, deve aparecer as opções: 1. Refrigerante
-2. Suco
-a. Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente”
-e mostrar novamente o menu inicial da bebida.
-b. Caso a pessoa tente inserir alguma informação do tipo String, o sistema deve retornar uma mensagem: “Formato inválido, para escolher
-o item, você deve informar o número dele”.
-
 
 6. Quando a pessoa selecionar o lanche que quer comprar, o sistema deve perguntar a quantidade do lanche solicitado
 que a pessoa quer comprar, após o usuário selecionar o lanche e a quantidade, o carrinho de compra deve adicionar o código,
@@ -68,12 +48,18 @@ e mostrar novamente as opções de cartão de crédito, cartão de débito, vale
 public class Menu {
     Scanner scanner;
 
-    public Menu(Scanner scanner) {
+    CarrinhoService carrinhoService;
+    ItemProdutoService itemProdutoService;
+
+    public Menu(Scanner scanner, CarrinhoService carrinhoService, ItemProdutoService itemProdutoService) {
 
         this.scanner = scanner;
+        this.carrinhoService = carrinhoService;
+        this.itemProdutoService = itemProdutoService;
 
     }
 
+    // Método pede ao usuário escolher o que deseja comprar: lanche ou bebida - testado
     public void menuInicial() {
 
         int escolha = 0;
@@ -111,11 +97,47 @@ public class Menu {
 
         } while (!entradaValida);
 
+        escolhaItemProduto(escolha);
+
+
     }
 
-    public void menuLanche() {
+
+    // Método recebe a escolha do usuário, se for lanche, pede que escolha entre X-burguer ou x-salada. Se for bebida
+    // pede que escolha entre Refrigerante ou suco.
+    // Pede ao usuário a quantidade, cria um item e retorna esse item - testado
+    public ItemProduto escolhaItemProduto(int escolha) {
+
+        ItemProduto itemProduto = null;
+        int quantidade;
+
+        switch (escolha) {
+
+            case 1:
+
+                String lanche = menuLanche();
+                quantidade = informaQuantidade();
+                itemProduto = itemProdutoService.criarItemProduto(lanche, quantidade);
+                break;
+
+            case 2:
+
+                String bebida = menuBebida();
+                quantidade = informaQuantidade();
+                itemProduto = itemProdutoService.criarItemProduto(bebida, quantidade);
+                break;
+
+        }
+
+        return itemProduto;
+    }
+
+    // Método que pede ao usuário que escolha o lanche - testado
+    public String menuLanche() {
 
         int escolha = 0;
+
+        String produto = null;
 
         boolean entradaValida = false;
 
@@ -149,11 +171,28 @@ public class Menu {
 
         } while (!entradaValida);
 
+        if (escolha == 1) {
+
+            produto = "X-burger";
+
+        } else {
+
+            produto = "X-salada";
+
+        }
+        scanner.nextLine();
+
+        return produto;
     }
 
-    public void menuBebida() {
+
+    // Método que pede ao usuário que escolha a bebida - testado
+
+    public String menuBebida() {
 
         int escolha = 0;
+
+        String produto = null;
 
         boolean entradaValida = false;
 
@@ -187,7 +226,22 @@ public class Menu {
 
         } while (!entradaValida);
 
+        if (escolha == 1) {
+
+            produto = "Refrigerante";
+
+        } else {
+
+            produto = "Suco";
+
+        }
+        scanner.nextLine();
+
+        return produto;
+
+
     }
+
     public void escolherOpcoes() {
 
         int escolha = 0;
@@ -225,6 +279,8 @@ public class Menu {
             }
 
         } while (!entradaValida);
+
+        acionaMetodo(escolha);
 
     }
 
@@ -300,7 +356,62 @@ public class Menu {
 
     }
 
+    public Integer informaQuantidade() {
 
+        boolean entradaValida = false;
+
+        int quantidade = 0;
+
+        do {
+
+            try {
+
+                System.out.println("Qual quantidade do ítem deseja adicionar no carrinho?");
+
+                quantidade = scanner.nextInt();
+
+                if (quantidade > 0) {
+
+                    entradaValida = true;
+
+                } else {
+
+                    System.out.println("Quantidade não pode ser 0 ou número negativo.");
+                    entradaValida = false;
+
+                }
+
+            } catch (InputMismatchException e) {
+
+                System.out.println("Formato inválido. Digite um número inteiro para a quantidade.");
+                scanner.nextLine();
+
+
+            }
+
+        } while (!entradaValida);
+
+        return quantidade;
+
+    }
+
+    public ItemProduto criarItemProduto() {
+
+        return null;
+
+    }
+
+
+    public void integrarMenu() {
+
+        menuInicial();
+
+
+        // ItemProduto itemProduto = itemProdutoService.criarItemProduto();
+        //carrinhoService.adicionarItem();
+
+
+    }
 
 
 }
