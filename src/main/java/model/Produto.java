@@ -20,4 +20,8 @@ public class Produto {
     public BigDecimal getValorUnitario() {
         return valorUnitario;
     }
+
+    public Long getId() {
+        return id;
+    }
 }

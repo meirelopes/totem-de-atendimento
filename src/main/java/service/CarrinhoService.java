@@ -3,6 +3,7 @@ package service;
 import model.Carrinho;
 import model.ItemProduto;
 import repository.CarrinhoRepository;
+import repository.ItemProdutoRepository;
 import repository.ProdutoRepository;
 
 import javax.transaction.Transactional;
@@ -15,11 +16,15 @@ public class CarrinhoService {
     private CarrinhoRepository carrinhoRepository;
 
     private ProdutoRepository produtoRepository;
+    private ItemProdutoRepository itemProdutoRepository;
 
-    public CarrinhoService(CarrinhoRepository carrinhoRepository, ProdutoRepository produtoRepository) {
+
+    public CarrinhoService(CarrinhoRepository carrinhoRepository,
+                           ProdutoRepository produtoRepository, ItemProdutoRepository itemProdutoRepository) {
 
         this.carrinhoRepository = carrinhoRepository;
         this.produtoRepository = produtoRepository;
+        this.itemProdutoRepository = itemProdutoRepository;
 
     }
 
@@ -39,9 +44,7 @@ public class CarrinhoService {
     }
 
     @Transactional
-    public void adicionarItem(ItemProduto item) {
-
-        Carrinho carrinho = criarCarrinho();
+    public Carrinho adicionarItem(ItemProduto item, Carrinho carrinho) {
 
         List<ItemProduto> itens = carrinho.getItens();
 
@@ -50,13 +53,16 @@ public class CarrinhoService {
             itens = new ArrayList<>();
 
         }
-
+        item.setCarrinho(carrinho);
         item.setId(item.getId());
         item.setQuantidade(item.getQuantidade());
         item.setProduto(item.getProduto());
         itens.add(item);
         atualizarValorTotalCarrinho(carrinho);
+        itemProdutoRepository.salvarItemProduto(item);
+
         carrinhoRepository.salvarCarrinho(carrinho);
+        return carrinho;
 
     }
 
@@ -75,9 +81,11 @@ public class CarrinhoService {
             valorTotal = valorTotal.add(subtotal);
 
 
-            // atualizar no banco de dados
 
         }
+        carrinho.setValorTotal(valorTotal);
+        carrinhoRepository.salvarCarrinho(carrinho);
+
 
     }
 

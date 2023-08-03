@@ -1,5 +1,6 @@
 package org.example;
 
+import model.Carrinho;
 import model.ItemProduto;
 import model.Produto;
 import repository.CarrinhoRepository;
@@ -38,23 +39,16 @@ public class Testes {
         CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager);
 
 
-        CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, produtoRepository);
 
         ItemProdutoRepository itemProdutoRepository = new ItemProdutoRepository(entityManager);
+        CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, produtoRepository, itemProdutoRepository);
 
 
         ItemProdutoService itemProdutoService = new ItemProdutoService(itemProdutoRepository, produtoRepository);
 
         Menu menu = new Menu(scanner, carrinhoService, itemProdutoService);
 
-       menu.adicionarItem();
-
-
-        List<Produto> produtos = produtoRepository.listarProdutos();
-
-        for (Produto produto : produtos) {
-            System.out.println("Nome: " + produto.getNome() + ", Valor: R$" + produto.getValorUnitario());
-        }
+       menu.iniciarSistema();
 
         entityManager.close();
         factory.close();

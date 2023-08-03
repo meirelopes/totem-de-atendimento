@@ -1,6 +1,7 @@
 package view;
 
 
+import model.Carrinho;
 import model.ItemProduto;
 import service.CarrinhoService;
 import service.ItemProdutoService;
@@ -9,24 +10,6 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /*
-
-6. Quando a pessoa selecionar o lanche que quer comprar, o sistema deve perguntar a quantidade do lanche solicitado
-que a pessoa quer comprar, após o usuário selecionar o lanche e a quantidade, o carrinho de compra deve adicionar o código,
-quantidade, nome e valor do lanche e mostrar o valor total do pedido até aquele momento. Sendo que os valores dos lanches são:
-a. X-burger - R$ 10,00
-b. X-salada - R$ 12,00
-8. Quando a pessoa selecionar a bebida que quer comprar, o sistema deve perguntar a quantidade de bebida que a pessoa quer comprar, após
-o usuário selecionar a bebida e a quantidade, o carrinho de compra deve adicionar o código, a quantidade, nome e valor da bebida e mostrar
-o valor total do pedido até aquele momento. Sendo que os valores das bebidas são:
-Desafio - Kotlin
-a. Refrigerantes - R$ 8,00
-b. Sucos - R$ 6,00
-
-9. Após a pessoa informar o lanche ou bebida que quer comprar e ver o valor total do pedido até aquele momento, o sistema deve perguntar
-se a pessoa deseja incluir mais itens, editar um item, remover item ou se deseja finalizar o pedido.
-
-
-a. Se ela desejar comprar mais itens, o sistema deve voltar para o menu inicial.
 b. Se ela desejar editar um item, o sistema deve solicitar o código do produto que deseja editar. Após receber um código válido e
 encontrar o produto, o sistema deverá perguntar qual a nova quantidade de itens que o usuário deseja adicionar, após o usuário atualizar o
 valor da quantidade, o sistema deve atualizar o valor total da compra e exibir novamente o carrinho atualizado.
@@ -98,7 +81,6 @@ public class Menu {
         } while (!entradaValida);
 
         return escolha;
-
 
     }
 
@@ -239,75 +221,6 @@ public class Menu {
 
         return produto;
 
-
-    }
-
-    public void escolherOpcoes() {
-
-        int escolha = 0;
-
-        boolean entradaValida = false;
-
-        do {
-
-            try {
-
-                System.out.println("Escolha uma opção para continuar:");
-                System.out.println("1 - Incluir mais itens");
-                System.out.println("2 - Editar um item");
-                System.out.println("3 - Remover item");
-                System.out.println("4 - Finalizar o pedido");
-                System.out.print("Escolha: ");
-                escolha = scanner.nextInt();
-
-                if (escolha >= 1 && escolha <= 4) {
-
-                    entradaValida = true;
-
-                } else {
-
-                    System.out.println("Opção inválida, tente novamente");
-
-                }
-
-            } catch (InputMismatchException e) {
-
-                System.out.println("Formato inválido. Você deve informar um número de 1 a 4");
-
-                scanner.nextLine();
-
-            }
-
-        } while (!entradaValida);
-
-        acionaMetodo(escolha);
-
-    }
-
-    // Método chama o método de acordo com a escolha do usuário
-    public void acionaMetodo(int escolha) {
-
-        switch (escolha) {
-
-            case 1:
-
-                menuInicial();
-                break;
-
-            case 2:
-
-                break;
-
-            case 3:
-
-                break;
-
-            case 4:
-
-                break;
-
-        }
-
     }
 
     public void qualFormaPagamento() {
@@ -396,13 +309,171 @@ public class Menu {
 
     }
 
+    // Método adiciona um ítem no carrinho e retorna esse carrinho -testado
+    public Carrinho adicionarItem() {
 
-    public void adicionarItem() {
+        // escolher entre carrinho novo ou antigo
+        Carrinho carrinho = escolherCarrinho();
 
         ItemProduto itemProduto = escolhaItemProduto();
-        carrinhoService.adicionarItem(itemProduto);
+        return carrinhoService.adicionarItem(itemProduto, carrinho);
 
     }
 
+    public void iniciarSistema() {
+
+        mostrarCarrinho();
+        escolherOpcoes();
+
+    }
+
+    // Método mostra na tela o que foi comprado e o valor total até o momento - testado
+    public void mostrarCarrinho() {
+
+        Carrinho carrinho = adicionarItem();
+        System.out.println("CÓDIGO DO CARRINHO: " + carrinho.getId());
+        System.out.println("ÍTENS ADICIONADO NO CARRINHO:");
+        for (ItemProduto item : carrinho.getItens()) {
+            System.out.println("Código do produto: " + item.getProduto().getId() + " - " + item.getProduto().getNome()
+                    + "| Valor unitário: R$ " + item.getProduto().getValorUnitario()
+                    + "| Quantidade: " + item.getQuantidade());
+        }
+        System.out.println("Valor total: R$ " + carrinho.getValorTotal());
+    }
+
+// Método oferece opções de interação com o usuário
+    public void escolherOpcoes() {
+
+        int escolha = 0;
+
+        boolean entradaValida = false;
+
+        do {
+
+            try {
+
+                System.out.println("Escolha uma opção para continuar:");
+                System.out.println("1 - Incluir mais itens");
+                System.out.println("2 - Editar um item");
+                System.out.println("3 - Remover item");
+                System.out.println("4 - Finalizar o pedido");
+                System.out.print("Escolha: ");
+                escolha = scanner.nextInt();
+
+                if (escolha >= 1 && escolha <= 4) {
+
+                    entradaValida = true;
+
+                } else {
+
+                    System.out.println("Opção inválida, tente novamente");
+
+                }
+
+            } catch (InputMismatchException e) {
+
+                System.out.println("Formato inválido. Você deve informar um número de 1 a 4");
+
+                scanner.nextLine();
+
+            }
+
+        } while (!entradaValida);
+
+        acionaMetodo(escolha);
+
+    }
+
+    // Método chama o método de acordo com a escolha do usuário
+    public void acionaMetodo(int escolha) {
+
+        switch (escolha) {
+
+            case 1:
+
+                iniciarSistema();
+                break;
+
+            case 2:
+
+                //editar um item
+                break;
+
+            case 3:
+
+                // excluir um item
+                break;
+
+            case 4:
+
+                //forma de pagamento
+
+                break;
+
+        }
+
+    }
+
+
+    // Método pergunta ao usuário se já possui um carrinho aberto ou não
+    // Se sim irá pedir o código do carrinho e buscará no banco de dados
+    // Se não irá criar um carrinho - testado
+    public Carrinho escolherCarrinho() {
+
+        Carrinho carrinho =  null;
+
+        int escolha = 0;
+
+        boolean entradaValida = false;
+
+        do {
+
+            try {
+
+                System.out.println("Já possui um carrinho aberto?");
+                System.out.println("1 - Sim");
+                System.out.println("2 - Não");
+                System.out.print("Escolha: ");
+                escolha = scanner.nextInt();
+
+                if (escolha >= 1 && escolha <= 2) {
+
+                    entradaValida = true;
+
+                } else {
+
+                    System.out.println("Opção inválida, tente novamente");
+
+                }
+
+            } catch (InputMismatchException e) {
+
+                System.out.println("Formato inválido, para escolher o item, " +
+                        "você deve informar o número dele");
+
+                scanner.nextLine();
+
+            }
+
+        } while (!entradaValida);
+
+        if (escolha == 1) {
+
+            // tratar exceção para formato inválido
+            System.out.println("Informe o código do carrinho:");
+
+            Long codigo = scanner.nextLong();
+
+            carrinho =  carrinhoService.buscarCarrinho(codigo);
+
+        } else if (escolha == 2) {
+
+            carrinho = carrinhoService.criarCarrinho();
+
+        }
+
+        return carrinho;
+
+    }
 
 }
