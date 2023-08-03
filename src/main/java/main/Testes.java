@@ -25,6 +25,7 @@ public class Testes {
         // desabilita os logs do hibernate
         Logger hibernateLogger = Logger.getLogger("org.hibernate");
         hibernateLogger.setLevel(java.util.logging.Level.WARNING);
+        Carrinho carrinho = new Carrinho();
 
         //menu.menuInicial();
         String nomeUnidadePersistencia = "FastFoodExpress"; // Nome da unidade de persistência definido no arquivo persistence.xml
@@ -38,16 +39,17 @@ public class Testes {
         Scanner scanner = new Scanner(System.in);
 
         ItemProdutoRepository itemProdutoRepository = new ItemProdutoRepository(entityManager);
-        CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager, itemProdutoRepository);
+        CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager, itemProdutoRepository, carrinho);
 
-        CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, produtoRepository, itemProdutoRepository);
+        CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, carrinho,produtoRepository, itemProdutoRepository);
 
 
         ItemProdutoService itemProdutoService = new ItemProdutoService(itemProdutoRepository, produtoRepository);
 
-        Menu menu = new Menu(scanner, carrinhoService, itemProdutoService);
+        Menu menu = new Menu(scanner,carrinhoService, itemProdutoService, carrinho);
 
-       menu.iniciarSistema();
+        menu.iniciarSistema();
+
 
         entityManager.close();
         factory.close();

@@ -8,6 +8,7 @@ import javax.persistence.EntityTransaction;
 import javax.transaction.Transactional;
 
 import java.math.BigDecimal;
+import java.util.InputMismatchException;
 import java.util.Optional;
 
 public class CarrinhoRepository {
@@ -15,18 +16,24 @@ public class CarrinhoRepository {
     private final EntityManager entityManager;
     ItemProdutoRepository itemProdutoRepository;
 
-    public CarrinhoRepository(EntityManager entityManager, ItemProdutoRepository itemProdutoRepository) {
+    Carrinho carrinhoAtual;
+
+    public CarrinhoRepository(EntityManager entityManager, ItemProdutoRepository
+            itemProdutoRepository, Carrinho carrinhoAtual) {
+
         this.entityManager = entityManager;
         this.itemProdutoRepository = itemProdutoRepository;
+        this.carrinhoAtual = carrinhoAtual;
+
     }
 
     public Optional<Carrinho> buscarCarrinhoPorId(Long id) {
 
         EntityTransaction transaction = entityManager.getTransaction();
         transaction.begin();
-        Carrinho carrinho = entityManager.find(Carrinho.class, id);
+        carrinhoAtual = entityManager.find(Carrinho.class, id);
         transaction.commit();
-        return Optional.ofNullable(carrinho);
+        return Optional.ofNullable(carrinhoAtual);
 
     }
 
@@ -52,11 +59,11 @@ public class CarrinhoRepository {
 
     public BigDecimal obterValorTotalCompraPorIdCarrinho(Long idCarrinho) {
 
-        Carrinho carrinho = entityManager.find(Carrinho.class, idCarrinho);
+        carrinhoAtual = entityManager.find(Carrinho.class, idCarrinho);
 
-        if (carrinho != null) {
+        if (carrinhoAtual != null) {
 
-            return carrinho.getValorTotal();
+            return carrinhoAtual.getValorTotal();
 
         }
 
@@ -75,17 +82,36 @@ public class CarrinhoRepository {
             ItemProduto itemProduto = itemProdutoRepository.buscarItemProdutoPorIdDoProdutoEIdDoCarrinho(produtoId, carrinhoId);
 
             if (itemProduto == null) {
-                throw new RuntimeException("ItemProduto não encontrado no carrinho.");
+
+                System.out.println("ItemProduto não encontrado no carrinho.");
+
+
+
+            } else {
+
+                entityManager.remove(itemProduto);
+
+                transaction.commit();
+
+                System.out.println(itemProduto.getProduto().getNome() + " removido com sucesso.");
+
             }
 
-            entityManager.remove(itemProduto);
 
-            transaction.commit();
-        } catch (Exception e) {
+
+        } catch (InputMismatchException e) {
+
+            System.out.println("Formato inválido. Código do produto deve ser um número inteiro");
+
+        }catch (Exception e) {
+
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
+
             }
+
             throw new RuntimeException("Erro ao remover o ItemProduto do carrinho.", e);
+
         }
     }
 

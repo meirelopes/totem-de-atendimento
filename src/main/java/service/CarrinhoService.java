@@ -12,17 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 public class CarrinhoService {
     private CarrinhoRepository carrinhoRepository;
+    Carrinho carrinhoAtual;
 
     private ProdutoRepository produtoRepository;
     private ItemProdutoRepository itemProdutoRepository;
 
-
-    public CarrinhoService(CarrinhoRepository carrinhoRepository,
+    public CarrinhoService(CarrinhoRepository carrinhoRepository, Carrinho carrinhoAtual,
                            ProdutoRepository produtoRepository, ItemProdutoRepository itemProdutoRepository) {
 
         this.carrinhoRepository = carrinhoRepository;
+        this.carrinhoAtual = carrinhoAtual;
         this.produtoRepository = produtoRepository;
         this.itemProdutoRepository = itemProdutoRepository;
 
@@ -30,17 +32,17 @@ public class CarrinhoService {
 
     public Carrinho criarCarrinho() {
 
-        Carrinho carrinho = new Carrinho();
+        carrinhoAtual = new Carrinho();
 
-        carrinho.setValorTotal(BigDecimal.ZERO);
+        carrinhoAtual.setValorTotal(BigDecimal.ZERO);
 
-        carrinho.setFechado(false);
+        carrinhoAtual.setFechado(false);
 
-        carrinho.setItens(new ArrayList<>());
+        carrinhoAtual.setItens(new ArrayList<>());
 
         // Salvar o carrinho no banco de dados
 
-        return carrinho;
+        return carrinhoAtual;
     }
 
     @Transactional
@@ -70,9 +72,9 @@ public class CarrinhoService {
     @Transactional
     public void atualizarItemPeloCodigoProduto(Long codigoProduto, int novaQuantidade, Long idCarrinho) {
 
-        Carrinho carrinho = buscarCarrinho(idCarrinho);
+        carrinhoAtual = buscarCarrinho(idCarrinho);
 
-        List<ItemProduto> itens = carrinho.getItens();
+        List<ItemProduto> itens = carrinhoAtual.getItens();
 
         if (itens != null) {
             for (ItemProduto item : itens) {
@@ -82,29 +84,47 @@ public class CarrinhoService {
                 }
             }
 
-            atualizarValorTotalCarrinho(carrinho);
+            atualizarValorTotalCarrinho(carrinhoAtual);
 
-            carrinhoRepository.salvarCarrinho(carrinho);
+            carrinhoRepository.salvarCarrinho(carrinhoAtual);
         }
     }
 
     // Método exclui item produto do carrinho
     public void excluirItem(Long produtoId, Long carrinhoId) {
-        Carrinho carrinho = buscarCarrinho(carrinhoId);
-        carrinhoRepository.removerItemProduto(produtoId, carrinhoId);
-        List<ItemProduto> itensAtualizados = new ArrayList<>();
+        carrinhoAtual = buscarCarrinho(carrinhoId);
+
+        if (!verificarProdutoNoCarrinho(produtoId, carrinhoAtual)) {
+
+            System.out.println("Produto não existe no carrinho.");
+
+        } else {
+            carrinhoRepository.removerItemProduto(produtoId, carrinhoId);
+            List<ItemProduto> itensAtualizados = new ArrayList<>();
+            List<ItemProduto> itensCarrinho = carrinhoAtual.getItens();
+            for (ItemProduto item : itensCarrinho) {
+                if (!item.getProduto().getId().equals(produtoId)) {
+                    itensAtualizados.add(item);
+                }
+            }
+
+            carrinhoAtual.setItens(itensAtualizados);
+
+            atualizarValorTotalCarrinho(carrinhoAtual);
+
+        }
+    }
+
+    public boolean verificarProdutoNoCarrinho(Long produtoId, Carrinho carrinho) {
         List<ItemProduto> itensCarrinho = carrinho.getItens();
         for (ItemProduto item : itensCarrinho) {
-            if (!item.getProduto().getId().equals(produtoId)) {
-                itensAtualizados.add(item);
+            if (item.getProduto().getId().equals(produtoId)) {
+                return true; // Produto encontrado no carrinho
             }
         }
-
-        carrinho.setItens(itensAtualizados);
-
-        atualizarValorTotalCarrinho(carrinho);
-
+        return false; // Produto não encontrado no carrinho
     }
+
 
     // Atualiza valor total do carrinho - testado
     private void atualizarValorTotalCarrinho(Carrinho carrinho) {
@@ -119,7 +139,6 @@ public class CarrinhoService {
                     .multiply(BigDecimal.valueOf(item.getQuantidade()));
 
             valorTotal = valorTotal.add(subtotal);
-
 
 
         }
@@ -142,36 +161,46 @@ public class CarrinhoService {
     }
 
     public Carrinho buscarCarrinho(Long id) {
+
         if (id != null) {
+
             Optional<Carrinho> optionalCarrinho = carrinhoRepository.buscarCarrinhoPorId(id);
+
             if (optionalCarrinho.isPresent()) {
+
                 return optionalCarrinho.get();
+
             } else {
+
                 throw new RuntimeException("Carrinho não encontrado");
+
             }
+
         } else {
+
             throw new IllegalArgumentException("ID do carrinho não pode ser nulo");
         }
     }
 
-     public BigDecimal devolverTroco (BigDecimal nota, Long carrinhoId) {
+    public BigDecimal devolverTroco(BigDecimal nota, Long carrinhoId) {
 
         BigDecimal valorTotal = carrinhoRepository.obterValorTotalCompraPorIdCarrinho(carrinhoId);
 
         int comparacao = nota.compareTo(valorTotal);
 
-        if (comparacao >= 0 ) {
+        if (comparacao >= 0) {
 
             return nota.subtract(valorTotal);
 
         } else {
 
             BigDecimal troco = (nota.subtract(valorTotal)).multiply(BigDecimal.valueOf(-1));
+
             return troco;
 
         }
 
-     }
+    }
 
 
 }

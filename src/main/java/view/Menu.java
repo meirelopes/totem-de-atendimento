@@ -6,31 +6,28 @@ import model.ItemProduto;
 import service.CarrinhoService;
 import service.ItemProdutoService;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.math.BigDecimal;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /*
-c. Se ela desejar remover itens, o sistema deve solicitar o código do produto válido que deseja remover (o código é um número que deverá ser
-adicionado ao produto automaticamente quando for adicionado ao carrinho), após ser feita a remoção do produto a partir do código, o sistema
-deve exibir o carrinho de compras atualizado.
-d. Se ela desejar finalizar o pedido, o sistema deve mostrar o valor total do pedido e quais os itens que ela selecionou e perguntar qual a
-forma de pagamento, sendo que o sistema deve aceitar cartão de crédito, cartão de débito, vale refeição e dinheiro.
-
 10. Testes unitários com pelo menos 90% de cobertura.
-
  */
 public class Menu {
     Scanner scanner;
 
+    Carrinho carrinhoAtual;
+
     CarrinhoService carrinhoService;
     ItemProdutoService itemProdutoService;
 
-    public Menu(Scanner scanner, CarrinhoService carrinhoService, ItemProdutoService itemProdutoService) {
+    public Menu(Scanner scanner, CarrinhoService carrinhoService, ItemProdutoService itemProdutoService, Carrinho carrinhoAtual) {
 
         this.scanner = scanner;
         this.carrinhoService = carrinhoService;
         this.itemProdutoService = itemProdutoService;
+        this.carrinhoAtual = carrinhoAtual;
 
     }
 
@@ -262,15 +259,14 @@ public class Menu {
 
         if (escolha > 0 && escolha < 4) {
 
-            boaRefeicao();
+            System.out.println(boaRefeicao());
 
         } else if (escolha == 4) {
 
-            System.out.println("Informe o código do carrinho:");
-            Long id = scanner.nextLong();
-            BigDecimal troco = carrinhoService.devolverTroco(informaNotaParaPagamento(), id);
+            BigDecimal troco = carrinhoService.devolverTroco(informaNotaParaPagamento(), carrinhoAtual.getId());
             System.out.println("Troco de R$ " + troco);
-            boaRefeicao();
+            System.out.println(boaRefeicao());
+
         }
 
     }
@@ -301,7 +297,7 @@ public class Menu {
 
     public String boaRefeicao() {
 
-        return "Compra finalizada com sucesso! Boa refeição";
+        return "Compra finalizada com sucesso! Boa refeição!";
 
     }
 
@@ -348,17 +344,106 @@ public class Menu {
     // Método adiciona um ítem no carrinho e retorna esse carrinho -testado
     public Carrinho adicionarItem() {
 
-        // escolher entre carrinho novo ou antigo
-        Carrinho carrinho = escolherCarrinho();
-
+        carrinhoAtual = escolherCarrinho();
         ItemProduto itemProduto = escolhaItemProduto();
-        return carrinhoService.adicionarItem(itemProduto, carrinho);
+
+        if (verificarItemExistente(carrinhoAtual, itemProduto)) {
+
+            desejaAtualizarQuantidade(itemProduto);
+
+        } else {
+
+            return carrinhoService.adicionarItem(itemProduto, carrinhoAtual);
+
+        }
+        return null;
+    }
+
+
+    // Método que pede ao usuário que escolha a bebida - testado
+
+    public void desejaAtualizarQuantidade(ItemProduto itemProduto) {
+
+        System.out.println("O produto já está no carrinho. Deseja atualizar a quantidade?" +
+                " (Digite 1 para sim ou 2 para não)");
+
+        int escolha = 0;
+
+        boolean entradaValida = false;
+
+        do {
+
+            try {
+
+                System.out.println("1 - Sim");
+                System.out.println("2 - Não");
+                System.out.print("Escolha: ");
+                escolha = scanner.nextInt();
+
+                if (escolha >= 1 && escolha <= 2) {
+
+                    entradaValida = true;
+
+                } else {
+
+                    System.out.println("Opção inválida, tente novamente");
+
+                }
+
+            } catch (InputMismatchException e) {
+
+                System.out.println("Formato inválido, para escolher o item,\n" +
+                        "você deve informar o número dele");
+
+                scanner.nextLine();
+
+            }
+
+        } while (!entradaValida);
+
+        if (escolha == 1) {
+
+            int quantidade = informaQuantidade();
+
+            carrinhoService.atualizarItemPeloCodigoProduto(itemProduto.getProduto().getId(), quantidade, carrinhoAtual.getId());
+            mostrarCarrinho(carrinhoAtual);
+            escolherOpcoes();
+
+        } else {
+
+            mostrarCarrinho(carrinhoAtual);
+            escolherOpcoes();
+
+        }
 
     }
-// Método que inicia o sistema
+
+
+    private boolean verificarItemExistente(Carrinho carrinho, ItemProduto itemProduto) {
+        for (ItemProduto item : carrinho.getItens()) {
+            if (item.getProduto().getId().equals(itemProduto.getProduto().getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public void incluirItens() {
+
+        adicionarItem();
+        mostrarCarrinho(carrinhoAtual);
+        escolherOpcoes();
+
+    }
+
+    // Método que inicia o sistema
     public void iniciarSistema() {
-        Carrinho carrinho = adicionarItem();
-        mostrarCarrinho(carrinho);
+
+        carrinhoAtual = carrinhoService.criarCarrinho();
+        ItemProduto itemProduto = escolhaItemProduto();
+        carrinhoService.adicionarItem(itemProduto, carrinhoAtual);
+        mostrarCarrinho(carrinhoAtual);
         escolherOpcoes();
 
     }
@@ -427,7 +512,7 @@ public class Menu {
 
             case 1:
 
-                iniciarSistema();
+                incluirItens();
 
                 break;
 
@@ -456,27 +541,66 @@ public class Menu {
     // Método atualiza a quantidade de um item
     public void atualizarItem() {
 
-        System.out.println("Informe o código do carrinho:");
-        Long carrinhoId = scanner.nextLong();
+        Long produtoId = informaCodigoProduto();
 
-        System.out.println("Informe o código do produto que gostaria de alterar:");
-        Long produtoId = scanner.nextLong();
+        if (!carrinhoService.verificarProdutoNoCarrinho(produtoId, carrinhoAtual)) {
 
-        int quantidade = informaQuantidade();
+            System.out.println("Não exista produto com o código " + produtoId + " no carrinho.");
+            escolherOpcoes();
+        } else {
 
-        carrinhoService.atualizarItemPeloCodigoProduto(produtoId, quantidade, carrinhoId);
-        Carrinho carrinho = carrinhoService.buscarCarrinho(carrinhoId);
-        mostrarCarrinho(carrinho);
-        escolherOpcoes();
+            int quantidade = informaQuantidade();
+
+            carrinhoService.atualizarItemPeloCodigoProduto(produtoId, quantidade, carrinhoAtual.getId());
+
+            mostrarCarrinho(carrinhoAtual);
+
+            escolherOpcoes();
+        }
     }
 
-//NÚMERO 1
+    public Long informaCodigoProduto() {
+
+        boolean eValido = false;
+        Long produtoId = 0L;
+
+
+        do {
+            try {
+
+                System.out.println("Informe o código do produto que gostaria de alterar:");
+                produtoId = scanner.nextLong();
+
+                if (produtoId >0) {
+
+                    eValido = true;
+
+                } else {
+
+                    System.out.println("Código do produto deve ser um número positivo diferente de zero");
+                    eValido = false;
+
+                }
+
+            } catch (InputMismatchException e) {
+
+                System.out.println("Formato inválido. O código do produto deve ser um número inteiro.");
+                eValido=false;
+                scanner.nextLine();
+
+            }
+
+        } while(!eValido);
+
+        return produtoId;
+    }
+
+
+    //NÚMERO 1
     // Método pergunta ao usuário se já possui um carrinho aberto ou não
     // Se sim irá pedir o código do carrinho e buscará no banco de dados
     // Se não irá criar um carrinho - testado
     public Carrinho escolherCarrinho() {
-
-        Carrinho carrinho = null;
 
         int escolha = 0;
 
@@ -486,7 +610,7 @@ public class Menu {
 
             try {
 
-                System.out.println("Já possui um carrinho aberto?");
+                System.out.println("Você já possui um carrinho aberto. Deseja continuar usando o mesmo carrinho?");
                 System.out.println("1 - Sim");
                 System.out.println("2 - Não");
                 System.out.print("Escolha: ");
@@ -513,38 +637,41 @@ public class Menu {
 
         } while (!entradaValida);
 
-        if (escolha == 1) {
+        if (escolha == 2) {
 
-            // tratar exceção para formato inválido
-            System.out.println("Informe o código do carrinho:");
+            System.out.println("Novo carrinho aberto!");
+            return carrinhoService.criarCarrinho();
 
-            Long codigo = scanner.nextLong();
 
-            carrinho = carrinhoService.buscarCarrinho(codigo);
+        } else if (escolha == 1) {
 
-        } else if (escolha == 2) {
 
-            carrinho = carrinhoService.criarCarrinho();
+            return carrinhoAtual;
+
+        } else {
+
+            return null;
 
         }
 
-        return carrinho;
-
     }
+
 
     public void excluirItem() {
 
-        System.out.println("Informe o código do carrinho:");
-        Long carrinhoId = scanner.nextLong();
+        Long produtoId = informaCodigoProduto();
 
-        System.out.println("Informe o código o produto que deseja excluir:");
-        Long produtoId = scanner.nextLong();
+        if (!carrinhoService.verificarProdutoNoCarrinho(produtoId, carrinhoAtual)) {
 
-        carrinhoService.excluirItem(produtoId, carrinhoId);
-        Carrinho carrinho = carrinhoService.buscarCarrinho(carrinhoId);
-        mostrarCarrinho(carrinho);
-        escolherOpcoes();
+            System.out.println("Não exista produto com o código " + produtoId + " no carrinho.");
+            escolherOpcoes();
 
+        } else {
+
+            carrinhoService.excluirItem(produtoId, carrinhoAtual.getId());
+            mostrarCarrinho(carrinhoAtual);
+            escolherOpcoes();
+        }
     }
 
 }

@@ -29,11 +29,6 @@ public class ProdutoRepository {
 
     }
 
-    public void adicionarProduto() {
-
-
-    }
-
     //  Método retornará o id do primeiro produto com o nome correspondente encontrado no banco de dados.
     //  Se houver mais de um produto com o mesmo nome, apenas o id do primeiro será retornado.
     public Long buscarIdPorNome(String nome) {
