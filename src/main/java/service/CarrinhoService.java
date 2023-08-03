@@ -5,6 +5,7 @@ import model.ItemProduto;
 import repository.CarrinhoRepository;
 import repository.ProdutoRepository;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,13 @@ public class CarrinhoService {
     private CarrinhoRepository carrinhoRepository;
 
     private ProdutoRepository produtoRepository;
+
+    public CarrinhoService(CarrinhoRepository carrinhoRepository, ProdutoRepository produtoRepository) {
+
+        this.carrinhoRepository = carrinhoRepository;
+        this.produtoRepository = produtoRepository;
+
+    }
 
     public Carrinho criarCarrinho() {
 
@@ -30,11 +38,12 @@ public class CarrinhoService {
         return carrinho;
     }
 
-    public void adicionarItem(ItemProduto item, int quantidade) {
+    @Transactional
+    public void adicionarItem(ItemProduto item) {
 
         Carrinho carrinho = criarCarrinho();
 
-        List < ItemProduto > itens = carrinho.getItens();
+        List<ItemProduto> itens = carrinho.getItens();
 
         if (itens == null) {
 
@@ -42,9 +51,12 @@ public class CarrinhoService {
 
         }
 
-        item.setQuantidade(quantidade);
+        item.setId(item.getId());
+        item.setQuantidade(item.getQuantidade());
+        item.setProduto(item.getProduto());
         itens.add(item);
         atualizarValorTotalCarrinho(carrinho);
+        carrinhoRepository.salvarCarrinho(carrinho);
 
     }
 
@@ -79,6 +91,19 @@ public class CarrinhoService {
 
         return produtoRepository.buscarIdPorNome(nomeProduto);
 
+    }
+
+    public Carrinho buscarCarrinho(Long id) {
+        if (id != null) {
+            Optional<Carrinho> optionalCarrinho = carrinhoRepository.buscarCarrinhoPorId(id);
+            if (optionalCarrinho.isPresent()) {
+                return optionalCarrinho.get();
+            } else {
+                throw new RuntimeException("Carrinho não encontrado");
+            }
+        } else {
+            throw new IllegalArgumentException("ID do carrinho não pode ser nulo");
+        }
     }
 
 

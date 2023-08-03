@@ -5,9 +5,8 @@ import model.ItemProduto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import javax.transaction.Transactional;
+
 import java.util.Optional;
 
 public class CarrinhoRepository {
@@ -16,6 +15,7 @@ public class CarrinhoRepository {
 
 
     public CarrinhoRepository(EntityManager entityManager) {
+
         this.entityManager = entityManager;
 
     }
@@ -28,6 +28,26 @@ public class CarrinhoRepository {
         transaction.commit();
         return Optional.ofNullable(carrinho);
 
+    }
+
+    @Transactional
+    public void salvarCarrinho(Carrinho carrinho) {
+
+        EntityTransaction transaction = null;
+        try {
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            entityManager.persist(carrinho);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao salvar o carrinho no banco de dados.", e);
+        }
     }
 
 }

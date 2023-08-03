@@ -2,13 +2,11 @@ package model;
 
 import enumeration.FormaPagamento;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Entity
 public class Carrinho {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +15,9 @@ public class Carrinho {
     private BigDecimal valorTotal;
     private boolean fechado;
     @Column(name = "forma_pagamento")
+    @Enumerated(EnumType.STRING)
     private FormaPagamento formaPagamento;
+    @OneToMany(mappedBy = "carrinho")
     private List<ItemProduto> itens;
 
     public Long getId() {

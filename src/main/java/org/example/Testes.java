@@ -2,6 +2,7 @@ package org.example;
 
 import model.ItemProduto;
 import model.Produto;
+import repository.CarrinhoRepository;
 import repository.ItemProdutoRepository;
 import repository.ProdutoRepository;
 import service.CarrinhoService;
@@ -34,8 +35,10 @@ public class Testes {
 
 
         Scanner scanner = new Scanner(System.in);
+        CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager);
 
-        CarrinhoService carrinhoService = new CarrinhoService();
+
+        CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, produtoRepository);
 
         ItemProdutoRepository itemProdutoRepository = new ItemProdutoRepository(entityManager);
 
@@ -44,8 +47,7 @@ public class Testes {
 
         Menu menu = new Menu(scanner, carrinhoService, itemProdutoService);
 
-       ItemProduto itemProduto = menu.escolhaItemProduto(1);
-        System.out.println(itemProduto.getProduto().getNome());
+       menu.adicionarItem();
 
 
         List<Produto> produtos = produtoRepository.listarProdutos();

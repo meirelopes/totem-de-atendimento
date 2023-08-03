@@ -60,7 +60,7 @@ public class Menu {
     }
 
     // Método pede ao usuário escolher o que deseja comprar: lanche ou bebida - testado
-    public void menuInicial() {
+    public Integer menuInicial() {
 
         int escolha = 0;
 
@@ -97,7 +97,7 @@ public class Menu {
 
         } while (!entradaValida);
 
-        escolhaItemProduto(escolha);
+        return escolha;
 
 
     }
@@ -106,8 +106,8 @@ public class Menu {
     // Método recebe a escolha do usuário, se for lanche, pede que escolha entre X-burguer ou x-salada. Se for bebida
     // pede que escolha entre Refrigerante ou suco.
     // Pede ao usuário a quantidade, cria um item e retorna esse item - testado
-    public ItemProduto escolhaItemProduto(int escolha) {
-
+    public ItemProduto escolhaItemProduto() {
+        Integer escolha = menuInicial();
         ItemProduto itemProduto = null;
         int quantidade;
 
@@ -356,6 +356,7 @@ public class Menu {
 
     }
 
+    // Método que pede ao usuário a quantidade do ítem escolhido e retorna essa quantidade - testado
     public Integer informaQuantidade() {
 
         boolean entradaValida = false;
@@ -395,21 +396,11 @@ public class Menu {
 
     }
 
-    public ItemProduto criarItemProduto() {
 
-        return null;
+    public void adicionarItem() {
 
-    }
-
-
-    public void integrarMenu() {
-
-        menuInicial();
-
-
-        // ItemProduto itemProduto = itemProdutoService.criarItemProduto();
-        //carrinhoService.adicionarItem();
-
+        ItemProduto itemProduto = escolhaItemProduto();
+        carrinhoService.adicionarItem(itemProduto);
 
     }
 
