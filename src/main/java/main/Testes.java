@@ -1,4 +1,4 @@
-package org.example;
+package main;
 
 import model.Carrinho;
 import model.ItemProduto;
