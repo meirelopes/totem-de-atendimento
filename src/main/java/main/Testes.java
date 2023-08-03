@@ -36,11 +36,10 @@ public class Testes {
 
 
         Scanner scanner = new Scanner(System.in);
-        CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager);
-
-
 
         ItemProdutoRepository itemProdutoRepository = new ItemProdutoRepository(entityManager);
+        CarrinhoRepository carrinhoRepository = new CarrinhoRepository(entityManager, itemProdutoRepository);
+
         CarrinhoService carrinhoService = new CarrinhoService(carrinhoRepository, produtoRepository, itemProdutoRepository);
 
 

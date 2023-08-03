@@ -4,6 +4,7 @@ import model.ItemProduto;
 import model.Produto;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 
 public class ItemProdutoRepository {
@@ -46,6 +47,22 @@ public class ItemProdutoRepository {
 
             throw new RuntimeException("Erro ao salvar o item no banco de dados.", e);
 
+        }
+    }
+
+    // Testado
+    public ItemProduto buscarItemProdutoPorIdDoProdutoEIdDoCarrinho(Long produtoId, Long carrinhoId) {
+
+        try {
+            return entityManager.createQuery(
+                            "SELECT ip FROM ItemProduto ip WHERE ip.produto.id = :produtoId AND ip.carrinho.id = :carrinhoId",
+                            ItemProduto.class
+                    )
+                    .setParameter("produtoId", produtoId)
+                    .setParameter("carrinhoId", carrinhoId)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         }
     }
 

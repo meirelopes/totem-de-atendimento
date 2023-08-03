@@ -6,24 +6,16 @@ import model.ItemProduto;
 import service.CarrinhoService;
 import service.ItemProdutoService;
 
+import java.math.BigDecimal;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /*
-b. Se ela desejar editar um item, o sistema deve solicitar o código do produto que deseja editar. Após receber um código válido e
-encontrar o produto, o sistema deverá perguntar qual a nova quantidade de itens que o usuário deseja adicionar, após o usuário atualizar o
-valor da quantidade, o sistema deve atualizar o valor total da compra e exibir novamente o carrinho atualizado.
 c. Se ela desejar remover itens, o sistema deve solicitar o código do produto válido que deseja remover (o código é um número que deverá ser
 adicionado ao produto automaticamente quando for adicionado ao carrinho), após ser feita a remoção do produto a partir do código, o sistema
 deve exibir o carrinho de compras atualizado.
 d. Se ela desejar finalizar o pedido, o sistema deve mostrar o valor total do pedido e quais os itens que ela selecionou e perguntar qual a
 forma de pagamento, sendo que o sistema deve aceitar cartão de crédito, cartão de débito, vale refeição e dinheiro.
-i. Após a pessoa selecionar uma das opções: cartão de crédito, cartão de débito ou vale refeição, o sistema mostra a seguinte mensagem:
- "Compra finalizada com sucesso! Boa refeição”.
-ii. Caso a pessoa selecione dinheiro, o sistema deve pedir qual o valor em dinheiro que o usuário usará para pagar,
-caso seja um valor mais alto que o valor total da compra, o sistema deverá exibir o troco que o usuário deverá receber.
-iii. Caso a pessoa tente escolher alguma coisa fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente”
-e mostrar novamente as opções de cartão de crédito, cartão de débito, vale refeição e dinheiro.
 
 10. Testes unitários com pelo menos 90% de cobertura.
 
@@ -261,7 +253,51 @@ public class Menu {
 
         } while (!entradaValida);
 
+        acionaMetodoQualFormaDePagamento(escolha);
+
     }
+
+    // Método chama o método de acordo com a escolha do usuário
+    public void acionaMetodoQualFormaDePagamento(int escolha) {
+
+        if (escolha > 0 && escolha < 4) {
+
+            boaRefeicao();
+
+        } else if (escolha == 4) {
+
+            System.out.println("Informe o código do carrinho:");
+            Long id = scanner.nextLong();
+            BigDecimal troco = carrinhoService.devolverTroco(informaNotaParaPagamento(), id);
+            System.out.println("Troco de R$ " + troco);
+            boaRefeicao();
+        }
+
+    }
+
+    public BigDecimal informaNotaParaPagamento() {
+
+        BigDecimal nota = BigDecimal.ZERO;
+        boolean valorValido;
+
+        do {
+            try {
+                System.out.println("Informe a nota que irá realizar o pagamento:");
+                nota = scanner.nextBigDecimal();
+                valorValido = nota.compareTo(BigDecimal.ZERO) > 0;
+                if (!valorValido) {
+                    System.out.println("Valor inválido. A nota deve ser maior que zero.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Formato inválido. Informe um número válido.");
+                scanner.next(); // Limpar o buffer de entrada para evitar loop infinito
+                valorValido = false;
+            }
+        } while (!valorValido);
+
+        return nota;
+    }
+
 
     public String boaRefeicao() {
 
@@ -319,18 +355,17 @@ public class Menu {
         return carrinhoService.adicionarItem(itemProduto, carrinho);
 
     }
-
+// Método que inicia o sistema
     public void iniciarSistema() {
-
-        mostrarCarrinho();
+        Carrinho carrinho = adicionarItem();
+        mostrarCarrinho(carrinho);
         escolherOpcoes();
 
     }
 
     // Método mostra na tela o que foi comprado e o valor total até o momento - testado
-    public void mostrarCarrinho() {
+    public void mostrarCarrinho(Carrinho carrinho) {
 
-        Carrinho carrinho = adicionarItem();
         System.out.println("CÓDIGO DO CARRINHO: " + carrinho.getId());
         System.out.println("ÍTENS ADICIONADO NO CARRINHO:");
         for (ItemProduto item : carrinho.getItens()) {
@@ -341,7 +376,8 @@ public class Menu {
         System.out.println("Valor total: R$ " + carrinho.getValorTotal());
     }
 
-// Método oferece opções de interação com o usuário
+
+    // Método oferece opções de interação com o usuário
     public void escolherOpcoes() {
 
         int escolha = 0;
@@ -392,21 +428,24 @@ public class Menu {
             case 1:
 
                 iniciarSistema();
+
                 break;
 
             case 2:
 
-                //editar um item
+                atualizarItem();
+
                 break;
 
             case 3:
 
-                // excluir um item
+                excluirItem();
+
                 break;
 
             case 4:
 
-                //forma de pagamento
+                qualFormaPagamento();
 
                 break;
 
@@ -414,13 +453,30 @@ public class Menu {
 
     }
 
+    // Método atualiza a quantidade de um item
+    public void atualizarItem() {
 
+        System.out.println("Informe o código do carrinho:");
+        Long carrinhoId = scanner.nextLong();
+
+        System.out.println("Informe o código do produto que gostaria de alterar:");
+        Long produtoId = scanner.nextLong();
+
+        int quantidade = informaQuantidade();
+
+        carrinhoService.atualizarItemPeloCodigoProduto(produtoId, quantidade, carrinhoId);
+        Carrinho carrinho = carrinhoService.buscarCarrinho(carrinhoId);
+        mostrarCarrinho(carrinho);
+        escolherOpcoes();
+    }
+
+//NÚMERO 1
     // Método pergunta ao usuário se já possui um carrinho aberto ou não
     // Se sim irá pedir o código do carrinho e buscará no banco de dados
     // Se não irá criar um carrinho - testado
     public Carrinho escolherCarrinho() {
 
-        Carrinho carrinho =  null;
+        Carrinho carrinho = null;
 
         int escolha = 0;
 
@@ -464,7 +520,7 @@ public class Menu {
 
             Long codigo = scanner.nextLong();
 
-            carrinho =  carrinhoService.buscarCarrinho(codigo);
+            carrinho = carrinhoService.buscarCarrinho(codigo);
 
         } else if (escolha == 2) {
 
@@ -473,6 +529,21 @@ public class Menu {
         }
 
         return carrinho;
+
+    }
+
+    public void excluirItem() {
+
+        System.out.println("Informe o código do carrinho:");
+        Long carrinhoId = scanner.nextLong();
+
+        System.out.println("Informe o código o produto que deseja excluir:");
+        Long produtoId = scanner.nextLong();
+
+        carrinhoService.excluirItem(produtoId, carrinhoId);
+        Carrinho carrinho = carrinhoService.buscarCarrinho(carrinhoId);
+        mostrarCarrinho(carrinho);
+        escolherOpcoes();
 
     }
 

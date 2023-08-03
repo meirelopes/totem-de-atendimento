@@ -66,7 +66,47 @@ public class CarrinhoService {
 
     }
 
+    // Atualiza a quantidade de produto do carrinho - testado
+    @Transactional
+    public void atualizarItemPeloCodigoProduto(Long codigoProduto, int novaQuantidade, Long idCarrinho) {
 
+        Carrinho carrinho = buscarCarrinho(idCarrinho);
+
+        List<ItemProduto> itens = carrinho.getItens();
+
+        if (itens != null) {
+            for (ItemProduto item : itens) {
+                if (item.getProduto().getId() == codigoProduto) {
+                    item.setQuantidade(novaQuantidade);
+                    break;
+                }
+            }
+
+            atualizarValorTotalCarrinho(carrinho);
+
+            carrinhoRepository.salvarCarrinho(carrinho);
+        }
+    }
+
+    // Método exclui item produto do carrinho
+    public void excluirItem(Long produtoId, Long carrinhoId) {
+        Carrinho carrinho = buscarCarrinho(carrinhoId);
+        carrinhoRepository.removerItemProduto(produtoId, carrinhoId);
+        List<ItemProduto> itensAtualizados = new ArrayList<>();
+        List<ItemProduto> itensCarrinho = carrinho.getItens();
+        for (ItemProduto item : itensCarrinho) {
+            if (!item.getProduto().getId().equals(produtoId)) {
+                itensAtualizados.add(item);
+            }
+        }
+
+        carrinho.setItens(itensAtualizados);
+
+        atualizarValorTotalCarrinho(carrinho);
+
+    }
+
+    // Atualiza valor total do carrinho - testado
     private void atualizarValorTotalCarrinho(Carrinho carrinho) {
 
         List<ItemProduto> itens = carrinho.getItens();
@@ -113,6 +153,25 @@ public class CarrinhoService {
             throw new IllegalArgumentException("ID do carrinho não pode ser nulo");
         }
     }
+
+     public BigDecimal devolverTroco (BigDecimal nota, Long carrinhoId) {
+
+        BigDecimal valorTotal = carrinhoRepository.obterValorTotalCompraPorIdCarrinho(carrinhoId);
+
+        int comparacao = nota.compareTo(valorTotal);
+
+        if (comparacao >= 0 ) {
+
+            return nota.subtract(valorTotal);
+
+        } else {
+
+            BigDecimal troco = (nota.subtract(valorTotal)).multiply(BigDecimal.valueOf(-1));
+            return troco;
+
+        }
+
+     }
 
 
 }
