@@ -48,10 +48,6 @@ public class Carrinho {
         return formaPagamento;
     }
 
-    public void setFormaPagamento(FormaPagamento formaPagamento) {
-        this.formaPagamento = formaPagamento;
-    }
-
     public List<ItemProduto> getItens() {
         return itens;
     }

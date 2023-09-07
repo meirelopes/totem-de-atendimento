@@ -264,8 +264,20 @@ public class Menu {
         } else if (escolha == 4) {
 
             BigDecimal troco = carrinhoService.devolverTroco(informaNotaParaPagamento(), carrinhoAtual.getId());
-            System.out.println("Troco de R$ " + troco);
-            System.out.println(boaRefeicao());
+
+            int comparacao = troco.compareTo(BigDecimal.ZERO);
+
+            if (comparacao < 0) {
+
+                // ARRUMAR BUG SE FOR VALOR DA NOTA MENOR TEM QUE PEDIR QUE INSIRA OUTRA FORMA DE PAGAMENTO
+                System.out.println("Valor insuficiente para pagamento.");
+
+            } else {
+
+                System.out.println("Troco de R$ " + troco);
+                System.out.println(boaRefeicao());
+
+            }
 
         }
 
@@ -286,7 +298,7 @@ public class Menu {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Formato inválido. Informe um número válido.");
-                scanner.next(); // Limpar o buffer de entrada para evitar loop infinito
+                scanner.next();
                 valorValido = false;
             }
         } while (!valorValido);
@@ -571,7 +583,7 @@ public class Menu {
                 System.out.println("Informe o código do produto que gostaria de alterar:");
                 produtoId = scanner.nextLong();
 
-                if (produtoId >0) {
+                if (produtoId > 0) {
 
                     eValido = true;
 
@@ -585,12 +597,12 @@ public class Menu {
             } catch (InputMismatchException e) {
 
                 System.out.println("Formato inválido. O código do produto deve ser um número inteiro.");
-                eValido=false;
+                eValido = false;
                 scanner.nextLine();
 
             }
 
-        } while(!eValido);
+        } while (!eValido);
 
         return produtoId;
     }

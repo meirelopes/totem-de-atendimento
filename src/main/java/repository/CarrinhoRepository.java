@@ -13,10 +13,11 @@ import java.util.Optional;
 
 public class CarrinhoRepository {
 
-    private final EntityManager entityManager;
+    private EntityManager entityManager;
     ItemProdutoRepository itemProdutoRepository;
 
     Carrinho carrinhoAtual;
+
 
     public CarrinhoRepository(EntityManager entityManager, ItemProdutoRepository
             itemProdutoRepository, Carrinho carrinhoAtual) {
@@ -24,6 +25,10 @@ public class CarrinhoRepository {
         this.entityManager = entityManager;
         this.itemProdutoRepository = itemProdutoRepository;
         this.carrinhoAtual = carrinhoAtual;
+
+    }
+
+    public CarrinhoRepository() {
 
     }
 
@@ -115,6 +120,7 @@ public class CarrinhoRepository {
         }
     }
 
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 }
-
-

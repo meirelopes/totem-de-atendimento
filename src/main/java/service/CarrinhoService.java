@@ -2,6 +2,7 @@ package service;
 
 import model.Carrinho;
 import model.ItemProduto;
+import org.apache.commons.beanutils.BeanUtils;
 import repository.CarrinhoRepository;
 import repository.ItemProdutoRepository;
 import repository.ProdutoRepository;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 public class CarrinhoService {
     private CarrinhoRepository carrinhoRepository;
-    Carrinho carrinhoAtual;
+    private Carrinho carrinhoAtual;
 
     private ProdutoRepository produtoRepository;
     private ItemProdutoRepository itemProdutoRepository;
@@ -148,11 +149,6 @@ public class CarrinhoService {
 
     }
 
-    private Optional<Carrinho> buscarPorId(Long id) {
-
-        return carrinhoRepository.buscarCarrinhoPorId(id);
-
-    }
 
     private Long buscarIdPorNome(String nomeProduto) {
 
@@ -186,19 +182,10 @@ public class CarrinhoService {
 
         BigDecimal valorTotal = carrinhoRepository.obterValorTotalCompraPorIdCarrinho(carrinhoId);
 
-        int comparacao = nota.compareTo(valorTotal);
 
-        if (comparacao >= 0) {
-
-            return nota.subtract(valorTotal);
-
-        } else {
-
-            BigDecimal troco = (nota.subtract(valorTotal)).multiply(BigDecimal.valueOf(-1));
+            BigDecimal troco = (nota.subtract(valorTotal));
 
             return troco;
-
-        }
 
     }
 
