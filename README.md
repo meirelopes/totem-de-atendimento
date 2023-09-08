@@ -24,15 +24,24 @@ Esta é uma API de treinamento
 
 - **Java 11**
 
-- **Hibernate 
+- **Hibernate** 
   
-- **Postgres
+- **Postgres**
 
 ## Detalhes do Projeto:
 
 O projeto é um sistema para totem de auto-atendimento que deve atender aos seguintes requisitos:
 
-O projeto utiliza um banco de dados postgreSQL para ambiente de desenvolvimento com a utilização de um arquivo afterMigration.sql que limpa os dados da tabela após a inicialização da aplicação e outro banco de dados PostgreSQL para fins de teste em ambiente de teste, com uma classe que exclui a tabela do banco de dados e outra casse responsável para popular a tabela com dados.
+- A tela inicial deve ter um menu onde a pessoa deve selecionar se ela quer comprar: 
+     1. Lanche 
+     2. Bebida
+- Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente” e mostrar novamente o menu inicial. 
+- O sistema deve aceitar apenas o número da opção, ou seja, se a pessoa quiser um lanche ela deve inserir 1 e caso queira uma bebida ela deve digitar 2. 
+- Caso a pessoa tente inserir alguma informação do tipo String o sistema deve retornar uma mensagem: “Formato inválido, para escolher o item, você deve informar o número dele”. 
+- Quando digitar 1, ou seja, o item Lanche, deve aparecer as opções:
+     1. X-burger 
+     2. X-salada
+- Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem "Opção inválida, tente novamente" e mostrar novamente o menu inicial do lanche.
 
 ## Documentação
 
