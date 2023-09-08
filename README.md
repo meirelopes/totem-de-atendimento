@@ -42,7 +42,21 @@ O projeto é um sistema para totem de auto-atendimento que deve atender aos segu
      1. X-burger 
      2. X-salada
 - Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem "Opção inválida, tente novamente" e mostrar novamente o menu inicial do lanche.
-
+- Caso a pessoa tente inserir alguma informação do tipo String, o sistema deve retornar uma mensagem: “Formato inválido, para escolher o item, você deve informar o número dele”. 
+- Quando a pessoa selecionar o lanche que quer comprar, o sistema deve perguntar a quantidade do lanche solicitado que a pessoa quer comprar,
+após o usuário selecionar o lanche e a quantidade, o carrinho de compra deve adicionar o código, quantidade, nome e valor do lanche e
+mostrar o valor total do pedido até aquele momento. Sendo que os valores dos lanches são: 
+     1. X-burger - R$ 10,00
+     2. X-salada - R$ 12,00 
+- Quando digitar 2, ou seja, o item Bebida, deve aparecer as opções:
+     1. Refrigerante 
+     2. Suco 
+- Caso a pessoa tente escolher algum item fora das opções acima, o sistema deve mostrar a mensagem “Opção inválida, tente novamente” e mostrar novamente o menu inicial da bebida. 
+- Caso a pessoa tente inserir alguma informação do tipo String, o sistema deve retornar uma mensagem: “Formato inválido, para escolher o item, você deve informar o número dele”. 
+- Quando a pessoa selecionar a bebida que quer comprar, o sistema deve perguntar a quantidade de bebida que a pessoa quer comprar, após o usuário selecionar a bebida e a quantidade,
+o carrinho de compra deve adicionar o código, a quantidade, nome e valor da bebida e mostrar o valor total do pedido até aquele momento. Sendo que os valores das bebidas são:
+     1. Refrigerante - R$ 8,00
+     2. Suco - R$ 6,00
 ## Documentação
 
 A documentação da API foi descrita obedecendo a especificação OpenAPI e pode ser encontrada na UI do Swagger. Para visualizá-lo, visite: Swagger UI.: [Swagger UI](http://localhost:8080/swagger-ui.html).
