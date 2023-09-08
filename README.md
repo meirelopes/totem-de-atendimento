@@ -57,14 +57,22 @@ mostrar o valor total do pedido até aquele momento. Sendo que os valores dos la
 o carrinho de compra deve adicionar o código, a quantidade, nome e valor da bebida e mostrar o valor total do pedido até aquele momento. Sendo que os valores das bebidas são:
      1. Refrigerante - R$ 8,00
      2. Suco - R$ 6,00
-## Documentação
-
-A documentação da API foi descrita obedecendo a especificação OpenAPI e pode ser encontrada na UI do Swagger. Para visualizá-lo, visite: Swagger UI.: [Swagger UI](http://localhost:8080/swagger-ui.html).
-
-## Postman
-
-Foi utilizado o Postman para  testar as solicitações HTTP, como GET, POST, PUT, DELETE e outros. Acessar em:  [Postman](https://www.postman.com/).
-O arquivo da Collection gerenciamento-de-estoque pode ser acessado por meio do link: [gerenciamento-de-estoque](https://github.com/meirelopes/estoque-de-produtos/blob/main/estoque/gerenciamento-de-estoque.postman_collection.json)
+- Após a pessoa informar o lanche ou bebida que quer comprar e ver o valor total do pedido até aquele momento, o sistema deve
+perguntar se a pessoa deseja incluir mais itens, editar um item, remover item ou se deseja finalizar o pedido. 
+- Se ela desejar comprar mais itens, o sistema deve voltar para o menu inicial. 
+- Se ela desejar editar um item, o sistema deve solicitar o código do produto que deseja editar. Após receber um código válido e encontrar o produto,
+o sistema deverá perguntar qual a nova quantidade de itens que o usuário deseja adicionar, após o usuário atualizar o valor da quantidade,
+o sistema deve atualizar o valor total da compra e exibir novamente o carrinho atualizado. 
+- Se ela desejar remover itens, o sistema deve solicitar o código do produto válido que deseja remover (o código é um número que deverá ser
+adicionado ao produto automaticamente quando for adicionado ao carrinho), após ser feita a remoção do produto a partir do código, o sistema deve exibir o carrinho de compras atualizado. 
+- Se ela desejar finalizar o pedido, o sistema deve mostrar o valor total do pedido e quais os itens que ela selecionou e perguntar qual a forma de pagamento,
+sendo que o sistema deve aceitar cartão de crédito, cartão de débito, vale refeição e dinheiro. 
+     1. Após a pessoa selecionar uma das opções: cartão de crédito, cartão de débito ou vale refeição, o sistema mostra a seguinte mensagem: "Compra finalizada com sucesso! Boa refeição”.
+     2. Caso a pessoa selecione dinheiro, o sistema deve pedir qual o valor em dinheiro que o usuário usará para pagar, caso seja um valor
+mais alto que o valor total da compra, o sistema deverá exibir o troco que o usuário deverá receber. 
+     3. Caso a pessoa tente escolher alguma coisa fora das opções acima, o sistema deve mostrar a mensagem
+“Opção inválida, tente novamente” e mostrar novamente as opções de cartão de crédito, cartão de débito, vale refeição e dinheiro.
+- Testes unitários com pelo menos 90% de cobertura.
 
 ## Sugestões
 
